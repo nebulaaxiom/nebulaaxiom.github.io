@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QR Сканер</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: #ffffff;
+      font-family: system-ui, sans-serif;
+    }
+    .camera-box {
+      position: relative;
+      width: 80vw;
+      max-width: 400px;
+      aspect-ratio: 1 / 1;
+      border-radius: 20px;
+      overflow: hidden;
+      background: #f5f5f5;
+      box-shadow: 0 0 20px rgba(0,0,0,0.05);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .frame {
+      position: absolute;
+      border: 2px solid rgba(0,0,0,0.2);
+      border-radius: 18px;
+      width: 90%;
+      height: 90%;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="camera-box">
+    <video id="video" autoplay playsinline muted></video>
+    <div class="frame"></div>
+  </div>
+
+  <script type="module">
+    import QrScanner from "https://cdn.jsdelivr.net/npm/qr-scanner@^1/qr-scanner.min.js";
+
+    const videoElem = document.getElementById('video');
+
+    function handleResult(result) {
+      console.log("QR найден:", result);
+      try {
+        const url = new URL(result);
+        window.location.href = url.href;
+      } catch {
+        alert("Сканированный текст: " + result);
+      }
+      qrScanner.stop();
+    }
+
+    const qrScanner = new QrScanner(videoElem, result => handleResult(result), {
+      preferredCamera: 'environment',
+    });
+
+    qrScanner.start().catch(err => {
+      console.error("Ошибка камеры:", err);
+      alert("Не удалось получить доступ к камере. Разреши доступ в настройках.");
+    });
+  </script>
+</body>
+</html>
