@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QR Сканер</title>
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #000;
+    }
+    #video {
+      width: 90vw;
+      max-width: 400px;
+      border: 2px solid #fff;
+      border-radius: 8px;
+    }
+    #overlay {
+      position: absolute;
+      border: 2px dashed lime;
+      width: 70vw;
+      max-width: 300px;
+      height: 70vw;
+      max-height: 300px;
+      box-sizing: border-box;
+    }
+  </style>
+</head>
+<body>
+  <div style="position: relative;">
+    <video id="video" autoplay muted playsinline></video>
+    <div id="overlay"></div>
+  </div>
+
+  <script type="module">
+    import QrScanner from "https://cdn.jsdelivr.net/npm/qr-scanner@^1/qr-scanner.min.js";
+    // Если библиотека в другом месте, можешь поменять путь.
+
+    const videoElem = document.getElementById('video');
+
+    // Функция, вызывается, когда QR найден
+    function handleResult(result) {
+      console.log("QR result:", result);
+      // проверяем, что это ссылка
+      try {
+        let url = new URL(result);
+        // если валидный URL — переходим
+        window.location.href = url.href;
+      } catch (e) {
+        // не ссылка — просто показываем, или можно alert
+        alert("Сканированный текст: " + result);
+      }
+      qrScanner.stop();
+    }
+
+    const qrScanner = new QrScanner(videoElem, result => handleResult(result), {
+      // можно настроить предпочтительную камеру, быстродействие и др.
+      preferredCamera: "environment"
+    });
+
+    qrScanner.start().catch(err => {
+      console.error("Ошибка доступа к камере:", err);
+      alert("Не удалось получить доступ к камере. Проверьте разрешения.");
+    });
+  </script>
+</body>
+</html>
