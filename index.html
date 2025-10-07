@@ -1,23 +1,21 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>QR Сканер</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>QR Redirect</title>
   <style>
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
     body, html {
       margin: 0;
       padding: 0;
-      height: 100%;
       width: 100%;
+      height: 100%;
       display: flex;
       justify-content: center;
       align-items: center;
       background-color: #ffffff;
-      font-family: system-ui, sans-serif;
+      font-family: sans-serif;
     }
     .camera-box {
       position: relative;
@@ -56,26 +54,54 @@
   <script type="module">
     import QrScanner from "https://cdn.jsdelivr.net/npm/qr-scanner@^1/qr-scanner.min.js";
 
-    const videoElem = document.getElementById('video');
+    const videoElem = document.getElementById("video");
 
     function handleResult(result) {
-      console.log("QR найден:", result);
+      // result может быть либо строкой, либо объект, в зависимости от опций
+      let decoded;
+      if (typeof result === "string") {
+        decoded = result;
+      } else if (result && typeof result === "object" && "data" in result) {
+        decoded = result.data;
+      } else {
+        // если ни то, ни другое — прекращаем
+        return;
+      }
+
+      // проверка, что это URL
       try {
-        const url = new URL(result);
+        const url = new URL(decoded);
+        // сразу перенаправляем
         window.location.href = url.href;
-      } catch {
-        alert("Сканированный текст: " + result);
+      } catch (e) {
+        // не URL — можно, например, просто игнорировать или вывести в консоль
+        console.warn("Не URL:", decoded);
       }
       qrScanner.stop();
     }
 
-    const qrScanner = new QrScanner(videoElem, result => handleResult(result), {
-      preferredCamera: 'environment',
-    });
+    const qrScanner = new QrScanner(
+      videoElem,
+      result => handleResult(result),
+      {
+        preferredCamera: "environment",
+        returnDetailedScanResult: true
+      }
+    );
 
     qrScanner.start().catch(err => {
-      console.error("Ошибка камеры:", err);
-      alert("Не удалось получить доступ к камере. Разреши доступ в настройках.");
+      console.error("Ошибка доступа к камере:", err);
+      // Можно показать пользователю сообщение на странице (не alert)
+      const msg = document.createElement("div");
+      msg.textContent = "Не удалось получить доступ к камере";
+      msg.style.position = "absolute";
+      msg.style.top = "10px";
+      msg.style.left = "50%";
+      msg.style.transform = "translateX(-50%)";
+      msg.style.background = "rgba(255,0,0,0.1)";
+      msg.style.padding = "8px 12px";
+      msg.style.borderRadius = "8px";
+      document.body.appendChild(msg);
     });
   </script>
 </body>
